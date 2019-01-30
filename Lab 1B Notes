@@ -1,0 +1,23 @@
+Lab 1B Notes
+
+-- close N
+
+--abort 
+	crash shell w/ segfault
+
+--catch N
+	output diagnostic to stderr
+
+--ignore
+--default
+	both these flags do
+	signal(name,SIG_IGN)
+	signal(name,SIG_DFL)
+
+--pause
+	signal.pause()
+
+To get time in bash/dash benchmark
+	use times
+		can return both user and cpu system time
+		

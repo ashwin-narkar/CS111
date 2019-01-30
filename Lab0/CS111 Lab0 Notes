@@ -1,0 +1,46 @@
+-Tar: lab0-studentID.tar.gz
+
+-Source Code
+-Makefile
+-README
+	-name
+	-email
+	-id
+
+Lab0
+	backtrace.png
+	breakpoint.png
+
+Makefile
+	default: build code
+	clean: deletes all files created by makefile
+	dist: builds tarball
+	check: runs smoke test
+		-do sample runs of program and check the exit codes that your program outputs
+
+Lab0
+	Read from fd 0 (stdin)
+	Write what u read to fd 1 (stdout)
+	If successful, exit(0)
+
+
+Flags
+	exit status 3 is invalid argument
+	--input=filename 
+		specify which file to read from
+		input errors exit with code 1
+	--output=filename
+		specify the output file
+		output errors exit with code 2
+	--segfault
+		force a segfault intentionally
+	--catch
+		catches the segfault that is thrown
+		exit with code 4
+
+gdb
+	backtrace
+	bt
+	breakpoint.png
+
+

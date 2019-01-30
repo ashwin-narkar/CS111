@@ -1,0 +1,11 @@
+NAME: Ashwin Narkar
+EMAIL: ashwin.narkar@gmail.com
+ID: 204585474
+
+This project basically implements a very basic shell. It takes input from stdin and copies it to stdout. With various options it allows to read from a file and output to a file. 
+
+The main source code is in the lab0.c file. It uses getopt_long to parse the command line arguments that are passed to the code. There are 5 possible options available. --input takes an argument specifying which file to read from. --output specifies the output file to write to. --segfault forces the code to segfault by assigning through a null pointer. The --catch option catches a segfault using a signal handler. The --dump-core option causes a core dump. The primary funciton of the dump-core option is to negate the catch flag. 
+
+Another part of this project was creating the makefile. The makefile consists of the default build which just builds the lab0 executable. Make clean removes all files created by the makefile. Make dist generates the tarball which consists of the source code, an executable, the two screenshots from gdb, and the makefile itself. 
+
+The two screenshots for gdb show a backtrace and a breakpoint analysis of the segfault that is forced with the --segfault option for the program. When running under gdb, a GNU debugger, we can create a stack trace that shows the memory and stack frames at the time of the error. 

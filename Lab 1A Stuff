@@ -1,0 +1,29 @@
+Lab 1A Stuff
+
+-Can use an array for file descriptors
+	-dont need it
+
+-Multiple arguments for optarg
+	-optarg just gives you the pointer to the first argument
+	-to get the rest of the arguments
+		-iterate and increase optarg until you see the next '--' or '-' or argc
+Open flags
+	O_DSYNC 	all the changes happen to the file are pushed after the write and then reads will happen
+	O_SYNC 		data integrity is preserved at a file level
+	O_RSYNC 	all reads are ordered as well as writes
+
+
+Fork
+	errors
+		cant fork anymore children
+		not enough memory
+		limit to how many children you can have
+	return values
+		-1: error
+		0: child process gets the return 0
+		pid: parent process gets the pid return
+	use a switch case
+		child process can do one thing
+		parent process can do something else
+
+	
