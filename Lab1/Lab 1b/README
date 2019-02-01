@@ -1,0 +1,16 @@
+Name: Ashwin
+ID: 204585474
+Email: ashwin.narkar@gmail.com
+
+This is part 1b of the lab.
+
+For lab 1b, we continued implementing simpleton shell and we had to implement the remaining flags except for --profile.
+
+While there a lot more options to add this time, most of them were just added file options such as --append or --creat.
+
+We also had to implement signal handling using the signal library. The flags for this were --abort, --catch, --pause, --default, and --ignore.
+--abort causes the program to segfault. --catch takes one number as an argument as the signal to catch. --pause waits for a signal to arrive. --default takes a number argument as the signal number to restore to its default behavior. --ignore takes a number argument as the signal number to ignore.
+
+We also implemented --close, which takes one number argument as the file descriptor to close. We implemented --pipe which basically uses the pipe() system call to create two new file decriptors, one for the read end of a pipe and one for the write end of a pipe.
+
+The hardest option for me to implement was the --wait. This command closes the write ends of pipes and waits for all subprocesses called before it to finish using the waitpid system. It also outputs the exit statuses of these commands followed by a list of the command that was run.
