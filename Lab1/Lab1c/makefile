@@ -11,4 +11,4 @@ check: default test.sh
 	./test.sh
 
 dist: lab1c.c README
-	tar -czvf lab1-204585474.tar.gz lab1c.c makefile README test.sh
+	tar -czvf lab1-204585474.tar.gz lab1c.c makefile README

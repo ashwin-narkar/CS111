@@ -132,6 +132,9 @@ NUM_FAILED=0
 # in Lab 1b, --rdwr, --pipe, --wait, --close, --abort, --catch, --ignore,
 # --default, --pause, and various file flags
 
+
+: '
+
 # Test case 1 makes sure simpsh works for options in 1A.
 echo ""
 echo "--->test case 1:"
@@ -453,7 +456,7 @@ else
   echo "===>test case 17 failed"
 fi
 
-# Test case 18 --wait, part 3: if we don't close 4 in parent process, wc will
+# Test case 18 --wait, part 3: if we dont close 4 in parent process, wc will
 # hang there forever.
 echo ""
 echo "--->test case 18:"
@@ -667,6 +670,7 @@ else
   echo "===>test case 25 failed"
 fi
 
+'
 
 echo -e "\n\n======ALERT! MANUAL CHECKING BEGINS======"
 
