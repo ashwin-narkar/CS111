@@ -133,7 +133,7 @@ NUM_FAILED=0
 # --default, --pause, and various file flags
 
 
-: '
+
 
 # Test case 1 makes sure simpsh works for options in 1A.
 echo ""
@@ -670,7 +670,7 @@ else
   echo "===>test case 25 failed"
 fi
 
-'
+
 
 echo -e "\n\n======ALERT! MANUAL CHECKING BEGINS======"
 

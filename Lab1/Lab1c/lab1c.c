@@ -168,7 +168,7 @@ int main(int argc, char* argv[]) {
 	c = 0;
 	filenumber=0;
 	maxFiles = 10;
-	maxProcesses = 10;
+	maxProcesses = 20;
 	verbose_flag = 0;
 	wait_flag = 0;
 	error_flag = 0;
@@ -422,6 +422,7 @@ int main(int argc, char* argv[]) {
 					total_user_time = end_user_time - start_user_time;
 					total_cpu_time = end_cpu_time - start_cpu_time;
 					fprintf(stdout, "User time: %f\tCPU time: %f\n",total_user_time, total_cpu_time);
+					fflush(stdout);
 				}
 				break;
 			case 'h':
@@ -623,6 +624,9 @@ int main(int argc, char* argv[]) {
 	if (error_flag > max_exit_code) {
 		max_exit_code = error_flag;
 	}
+
+	//Total running time output
+		//fails the sanity check but used for report
 	// if (profile_flag) {
 	// 	int u = getrusage(RUSAGE_SELF,&profileUsage);
 	// 	end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
