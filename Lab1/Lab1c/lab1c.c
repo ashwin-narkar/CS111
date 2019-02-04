@@ -48,6 +48,9 @@ double total_user_time;
 double start_cpu_time;
 double end_cpu_time;
 double total_cpu_time;
+double overall_user_start_time;
+
+double overall_cpu_start_time;
 
 
 void crash() {
@@ -103,7 +106,7 @@ void runCommand(struct command c) {
 			exit(1);
 		}
 	}
-	//fprintf(stdout, "About to fork for a command\n");
+	
 	//TODO: ADD FSTAT CHECK HERE
 	//only if it has been opened before
 	struct stat b;
@@ -115,7 +118,7 @@ void runCommand(struct command c) {
 			error_flag =1;
 		}
 	}
-
+	fprintf(stdout, "About to fork for command %s\n",c.arguments[3]);
 	commands[runningProcesses] = c;
 	commandIds[runningProcesses] = fork();
 	int pid = commandIds[runningProcesses];
@@ -125,6 +128,7 @@ void runCommand(struct command c) {
 	}
 	if (pid == 0) { //dup2 files in the child process so that it doesnt override it in the parent process
 		c.id = getpid();
+		fprintf(stdout, "In child for %s\n", c.arguments[3]);
 		if (c.numarg < 4) {
 			//fprintf(stderr, "Not enough arguments for command\n");
 			//error_flag = 1;
@@ -148,7 +152,7 @@ void runCommand(struct command c) {
 	}
 	//parent process waits for child if the wait flag is HIGH
 	else if (pid>0){
-		//fprintf(stdout, "parentprocess %d\n", runningProcesses);
+		fprintf(stdout, "parentprocess for child %d\n", pid);
 		runningProcesses++;
 
 		if (profile_flag) {
@@ -164,6 +168,12 @@ void runCommand(struct command c) {
 }
 
 int main(int argc, char* argv[]) {
+
+	int qe = getrusage(RUSAGE_SELF,&profileUsage);
+	overall_user_start_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+	overall_cpu_start_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
+
+
 	argumentindex = 0;
 	c = 0;
 	filenumber=0;
@@ -532,11 +542,11 @@ int main(int argc, char* argv[]) {
 				}
 				break;
 			case 'z':
-				if (profile_flag) {
-					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					start_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
-					start_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
-				}
+				// if (profile_flag) {
+				// 	int u = getrusage(RUSAGE_SELF,&profileUsage);
+				// 	start_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+				// 	start_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
+				// }
 				if (verbose_flag){
 					fprintf(stdout,"--wait\n");
 				}
@@ -545,10 +555,11 @@ int main(int argc, char* argv[]) {
 				// }
 				finishedProcesses = 0;
 				while (finishedProcesses != runningProcesses) {
-					
+					//fprintf(stdout, "finishedProcesses %d \t runningProcesses %d\n", finishedProcesses, runningProcesses);
 					int s;
 					pid_t p = waitpid(-1,&s,0);		//all child processes
-
+					fprintf(stdout, "Waiting for children. Still have %d processes\n", p);
+					//fprintf(stdout, "finishedProcesses %d \t runningProcesses %d at line 560\n", finishedProcesses, runningProcesses);
 					
 					if (WIFEXITED(s)) {
 						fprintf(stdout,"exit %d ",WEXITSTATUS(s));
@@ -581,6 +592,7 @@ int main(int argc, char* argv[]) {
 					//print arguments here
 					fprintf(stdout,"\n");
 					finishedProcesses++;
+					
 				}
 				runningProcesses = 0;
 				finishedProcesses = 0;
@@ -590,7 +602,7 @@ int main(int argc, char* argv[]) {
 					end_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 					total_user_time = end_user_time - start_user_time;
 					total_cpu_time = end_cpu_time - start_cpu_time;
-					fprintf(stdout, "User time: %f\tCPU time: %f\n",total_user_time, total_cpu_time);
+					fprintf(stdout, "User time: %f\t\tCPU time: %f\n",total_user_time, total_cpu_time);
 
 					u = getrusage(RUSAGE_CHILDREN,&profileUsage);
 					end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
@@ -625,14 +637,16 @@ int main(int argc, char* argv[]) {
 		max_exit_code = error_flag;
 	}
 
-	//Total running time output
-		//fails the sanity check but used for report
-	// if (profile_flag) {
-	// 	int u = getrusage(RUSAGE_SELF,&profileUsage);
-	// 	end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
-	// 	end_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
-	// 	fprintf(stdout, "Total User time: %f\nTotal CPU time: %f\n",end_user_time, end_cpu_time);
-	// }
+	// Total running time output
+	// 	fails the sanity check but used for report
+	if (profile_flag) {
+		int u = getrusage(RUSAGE_SELF,&profileUsage);
+		end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+		end_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
+		total_user_time = end_user_time - overall_user_start_time;
+		total_cpu_time = end_cpu_time - overall_cpu_start_time;
+		fprintf(stdout, "Total User time: %f\tTotal CPU time: %f\n",total_user_time, total_cpu_time);
+	}
 	if (exited_with_signal) {
 		//fprintf(stderr, "Max error signfal%d\n", max_exit_signal);
 		exit(max_exit_signal+128);
