@@ -10,3 +10,44 @@ Bash:
 cat - <pg98.txt | grep "^the" | wc -l >out.txt; times
 0m0.057s	0m0.015s
 0m0.077s	0m0.070s
+
+Dash:
+
+0m0.000000s 0m0.000000s
+0m0.050000s 0m0.010000s
+
+
+Simpsh:
+./simpsh --profile --rdonly pg98.txt --creat --trunc --wronly out.txt --creat --trunc --wronly err.txt ---pipe --pipe --command 0 4 2 cat pg98.txt --command 3 6 2 tr [:lower:] [:upper:] --command 5 1 2 sort --wait; times
+
+0m0.129s 0m0.101s
+1m1.391s 0m10.104s
+
+Bash:
+$ cat - <pg98.txt | tr [:lower:] [:upper:] | sort > out.txt; times 
+
+0m0.133s 0m0.102s
+1m1.440s 0m10.111s
+
+Dash
+
+0m0.000000s 0m0.000000s
+0m0.040000s 0m0.000000s
+
+Simpsh
+./simpsh --rdonly pg98.txt --creat --trunc --wronly out.txt --creat --trunc --wronly err.txt --pipe --pipe  --command 0 4 2 cat pg98.txt  --command 3 6 2 tr [:lower:] [:upper] --pipe --command 5 8 2 cat - --command 7 1 2 wc -l --wait; times
+
+0m0.182s 0m0.113s
+1m1.526s 0m10.259s
+
+Bash
+$ cat - <pg98.txt | tr [:lower:] [:upper:] | cat - | wc -l > out.txt; times
+
+0m0.191s 0m0.117s
+1m1.531s 0m10.264s
+
+Dash
+
+0m0.000000s 0m0.000000s
+0m0.040000s 0m0.010000s
+

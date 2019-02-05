@@ -1,0 +1,7 @@
+#!/bin/sh
+echo "Test 2"
+cat - <pg98.txt | tr a-z A-Z | sort >out.txt;times 
+echo "Test 3"
+cat - <pg98.txt | tr "[:lower:]"  "[:upper:]" | cat - | wc -l > out.txt;times
+echo "Test 1"
+cat - <pg98.txt | grep "^the" | wc -l >out.txt;times
