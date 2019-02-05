@@ -1,0 +1,12 @@
+Benchmarks
+
+Simpsh:
+./simpsh --profile --rdonly pg98.txt --creat --trunc --wronly out.txt --creat --trunc --wronly err.txt ---pipe --pipe --command 0 4 2 cat pg98.txt --command 3 6 2 grep "^the" --command 5 1 2 wc -l --wait
+
+Child User Time: 0.005585	Child CPU Time: 0.002814
+Total User Time: 0.000747	Total CPU Time: 0.001091
+
+Bash:
+cat - <pg98.txt | grep "^the" | wc -l >out.txt; times
+0m0.057s	0m0.015s
+0m0.077s	0m0.070s

@@ -28,9 +28,9 @@ int main(int argc, char **argv) {
 	// end_user_time = (double) usage.ru_utime.tv_sec + (double)  usage.ru_utime.tv_usec * 0.000001;
 	// end_cpu_time = (double) usage.ru_stime.tv_sec + (double)  usage.ru_stime.tv_usec * 0.000001;
 	fprintf(stderr, "%ld\n", usage.ru_utime.tv_sec);
-	fprintf(stderr, "%f\n", (double) (usage.ru_utime.tv_usec*0.000001));
+	fprintf(stderr, "%.9g\n", (float) (usage.ru_utime.tv_usec*0.000001));
 	fprintf(stderr, "%ld\n", usage.ru_stime.tv_sec);
-	fprintf(stderr, "%ld\n", usage.ru_stime.tv_usec);
+	fprintf(stderr, "%.9g\n", (float) (usage.ru_stime.tv_usec*0.000001));
 	
 	// fprintf(stderr, "%f\n", overall_cpu_start_time);
 	exit(0);
