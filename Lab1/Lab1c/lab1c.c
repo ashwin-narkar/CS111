@@ -46,19 +46,12 @@ pid_t* commandIds;
 struct command *commands;
 int profile_flag;
 struct rusage profileUsage;
-float start_user_time;
-float end_user_time;
-float total_user_time;
-float start_cpu_time;
-float end_cpu_time;
-float total_cpu_time;
-float overall_user_start_time;
-long test_start_utime;
-long test_start_stime;
-long test_end_utime;
-long test_end_stime;
-
-float overall_cpu_start_time;
+double start_user_time;
+double end_user_time;
+double total_user_time;
+double start_cpu_time;
+double end_cpu_time;
+double total_cpu_time;
 
 
 void crash() {
@@ -97,7 +90,7 @@ struct command getCommandArgs(int argc, char* argv[]) {
 	if (verbose_flag == 1) {
 		fprintf(stdout,"--command");
 		int i;
-		for (i=0;i<toRun.numarg;i++){
+		for ( i=0;i<toRun.numarg;i++){
 			fprintf(stdout," %s",toRun.arguments[i]);
 
 		}
@@ -115,7 +108,7 @@ void runCommand(struct command c) {
 			exit(1);
 		}
 	}
-	
+	//fprintf(stdout, "About to fork for a command\n");
 	//TODO: ADD FSTAT CHECK HERE
 	//only if it has been opened before
 	struct stat b;
@@ -127,7 +120,7 @@ void runCommand(struct command c) {
 			error_flag =1;
 		}
 	}
-	//fprintf(stdout, "About to fork for command %s\n",c.arguments[3]);
+
 	commands[runningProcesses] = c;
 	commandIds[runningProcesses] = fork();
 	int pid = commandIds[runningProcesses];
@@ -137,15 +130,14 @@ void runCommand(struct command c) {
 	}
 	if (pid == 0) { //dup2 files in the child process so that it doesnt override it in the parent process
 		c.id = getpid();
-		//fprintf(stdout, "In child for %s\n", c.arguments[3]);
 		if (c.numarg < 4) {
 			//fprintf(stderr, "Not enough arguments for command\n");
 			//error_flag = 1;
 			exit(1);
 		}
-		//fprintf(stdout, "Finna dup2\n");
 		for (i=0;i<3;i++) {
 			if (dup2(files[atoi(c.arguments[i])],i) < 0) {
+					
 					fprintf(stderr,"Dup2 error for %d descriptor\n",i);
 					fprintf(stderr,"error for files[i] = %d\n",files[atoi(c.arguments[i])]);
 					exit(1);
@@ -156,85 +148,31 @@ void runCommand(struct command c) {
 		for (i = 0;i<filenumber;i++) {
 			close(files[i]);
 		}
-		//fprintf(stdout,"Got to line 150\n");
 		execvp(c.arguments[3],&c.arguments[3]);
 
 	}
 	//parent process waits for child if the wait flag is HIGH
 	else if (pid>0){
-		//fprintf(stdout, "parentprocess for child %d\n", pid);
+		//fprintf(stdout, "parentprocess %d\n", runningProcesses);
 		runningProcesses++;
-		// if (wait_flag) {
-		// 	int s;
-		// 	fprintf(stdout, "Waiting for child\n");
-		// 	pid_t p = waitpid(-1,&s,0);		//all child processes
-		// 	fprintf(stdout, "Waiting for children. Still have %d processes\n", p);
-		// 	//fprintf(stdout, "finishedProcesses %d \t runningProcesses %d at line 560\n", finishedProcesses, runningProcesses);
-		// 	if (WIFEXITED(s)) {
-		// 		fprintf(stdout,"exit %d ",WEXITSTATUS(s));
-		// 		fflush(stdout);
-		// 		if (WEXITSTATUS(s) >= max_exit_code) {
-		// 			max_exit_code = WEXITSTATUS(s);
-		// 		}
-		// 	}
-			
-		// 	else if (WIFSIGNALED(s) ) 
-		// 	{
-		// 		fprintf(stdout,"signal %d ",WTERMSIG(s));
-		// 		fflush(stdout);
-		// 		exited_with_signal = 1;
-		// 		if (WTERMSIG(s) > max_exit_signal) {
-		// 			max_exit_signal = WTERMSIG(s);
 
-		// 		}
-		// 	}
-		// 	//int currProcess;
-		// 	// for (int i =0;i< runningProcesses;i++) {
-		// 	// 	if (commandIds[i] == p) {
-		// 	// 		currProcess = i;
-		// 	// 		break;
-		// 	// 	}
-		// 	// }
-		// 	for (int i=3;i<c.numarg;i++) {
-		// 		fprintf(stdout, "%s ", c.arguments[i]);
-		// 	}
-		// 	//print arguments here
-		// 	fprintf(stdout,"\n");
-		// 	finishedProcesses++;
-		// }
 		if (profile_flag) {
 			int u = getrusage(RUSAGE_SELF,&profileUsage);
-			end_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-			end_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+			end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+			end_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 			total_user_time = end_user_time - start_user_time;
 			total_cpu_time = end_cpu_time - start_cpu_time;
-			fprintf(stdout, "User time: %.9g\tCPU time: %.9g\n",total_user_time, total_cpu_time);
+			fprintf(stdout, "User time: %f\tCPU time: %f\n",total_user_time, total_cpu_time);
 		}
 	}
 
 }
 
 int main(int argc, char* argv[]) {
-
-	int qe = getrusage(RUSAGE_SELF,&profileUsage);
-	//fprintf(stdout,"Return value %d\n",qe);
-	//overall_user_start_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-	//overall_cpu_start_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
-	test_start_utime = (long) (profileUsage.ru_utime.tv_sec * 1000000) + ((long) profileUsage.ru_utime.tv_usec);
-	test_start_stime = (long) (profileUsage.ru_stime.tv_sec * 1000000) + ((long) profileUsage.ru_stime.tv_usec);
-	
-
-
-
-	// fprintf(stdout, "overall_user_start_time = %lu\n", test_start_utime);
-	// fprintf(stdout, "overall_cpu_start_time = %lu\n", test_start_stime);
-
-
-
 	argumentindex = 0;
 	c = 0;
 	filenumber=0;
-	maxFiles = 30;
+	maxFiles = 10;
 	maxProcesses = 20;
 	verbose_flag = 0;
 	wait_flag = 0;
@@ -278,9 +216,9 @@ int main(int argc, char* argv[]) {
 		{"profile",no_argument,0,'b'},	
 		{NULL,0,NULL,0}
 	};
-	int j;
-	for (j = 0; j < argc; j++) {
-	 	if(strcmp("--wait", argv[j]) ==0) {
+	int i;
+	for (i = 0; i < argc; i++) {
+	 	if(strcmp("--wait", argv[i]) ==0) {
 	    	wait_flag = 1;
 	      	break;
 	    }
@@ -359,8 +297,8 @@ int main(int argc, char* argv[]) {
 			case 'r':
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					start_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					start_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					start_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					start_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 				}
 				if (verbose_flag){
 					fprintf(stdout,"--rdonly %s\n",optarg);
@@ -376,18 +314,18 @@ int main(int argc, char* argv[]) {
 				filenumber++;
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					end_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					end_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					end_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 					total_user_time = end_user_time - start_user_time;
 					total_cpu_time = end_cpu_time - start_cpu_time;
-					fprintf(stdout, "--rdonly User time: %.9g\tCPU time: %.9g\n",total_user_time, total_cpu_time);
+					fprintf(stdout, "User time: %f\tCPU time: %f\n",total_user_time, total_cpu_time);
 				}
 				break;
 			case 'w':
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					start_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					start_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					start_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					start_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 				}
 				if (verbose_flag){
 					fprintf(stdout,"--wronly %s\n",optarg);
@@ -404,18 +342,18 @@ int main(int argc, char* argv[]) {
 				filenumber++;
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					end_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					end_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					end_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 					total_user_time = end_user_time - start_user_time;
 					total_cpu_time = end_cpu_time - start_cpu_time;
-					fprintf(stdout, "--wronly User time: %.9g\tCPU time: %.9g\n",total_user_time, total_cpu_time);
+					fprintf(stdout, "User time: %f\tCPU time: %f\n",total_user_time, total_cpu_time);
 				}
 				break;
 			case 'c':
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					start_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					start_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					start_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					start_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 				}
 				runCommand(getCommandArgs(argc, argv));
 				break;
@@ -425,8 +363,8 @@ int main(int argc, char* argv[]) {
 			case 'l':
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					start_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					start_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					start_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					start_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 				}
 				if (verbose_flag) {
 					fprintf(stdout,"--close %s\n",optarg);
@@ -438,18 +376,18 @@ int main(int argc, char* argv[]) {
 				
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					end_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					end_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					end_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 					total_user_time = end_user_time - start_user_time;
 					total_cpu_time = end_cpu_time - start_cpu_time;
-					fprintf(stdout, "--close User time: %.9g\tCPU time: %.9g\n",total_user_time, total_cpu_time);
+					fprintf(stdout, "User time: %f\tCPU time: %f\n",total_user_time, total_cpu_time);
 				}
 				break;
 			case 'p':
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					start_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					start_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					start_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					start_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 				}
 				if (verbose_flag) {
 					fprintf(stdout, "--pipe\n");
@@ -464,18 +402,18 @@ int main(int argc, char* argv[]) {
 				filenumber++;
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					end_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					end_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					end_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 					total_user_time = end_user_time - start_user_time;
 					total_cpu_time = end_cpu_time - start_cpu_time;
-					fprintf(stdout, "--pipe User time: %.9g\tCPU time: %.9g\n",total_user_time, total_cpu_time);
+					fprintf(stdout, "User time: %f\tCPU time: %f\n",total_user_time, total_cpu_time);
 				}
 				break;
 			case 'a':
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					start_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					start_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					start_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					start_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 				}
 				if (verbose_flag) {
 					fprintf(stdout, "--abort\n");
@@ -484,19 +422,19 @@ int main(int argc, char* argv[]) {
 				crash();
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					end_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					end_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					end_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 					total_user_time = end_user_time - start_user_time;
 					total_cpu_time = end_cpu_time - start_cpu_time;
-					fprintf(stdout, "-- abort User time: %.9g\tCPU time: %.9g\n",total_user_time, total_cpu_time);
+					fprintf(stdout, "User time: %f\tCPU time: %f\n",total_user_time, total_cpu_time);
 					fflush(stdout);
 				}
 				break;
 			case 'h':
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					start_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					start_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					start_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					start_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 				}
 				if (verbose_flag) {
 					fprintf(stdout, "--catch %s\n",optarg);
@@ -505,18 +443,18 @@ int main(int argc, char* argv[]) {
 				signal(sig,catchError);
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					end_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					end_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					end_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 					total_user_time = end_user_time - start_user_time;
 					total_cpu_time = end_cpu_time - start_cpu_time;
-					fprintf(stdout, "--catch User time: %.9g\tCPU time: %.9g\n",total_user_time, total_cpu_time);
+					fprintf(stdout, "User time: %f\tCPU time: %f\n",total_user_time, total_cpu_time);
 				}
 				break;
 			case 'd':
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					start_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					start_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					start_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					start_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 				}
 				if (verbose_flag){
 					fprintf(stdout,"--rdwr %s\n",optarg);
@@ -532,18 +470,18 @@ int main(int argc, char* argv[]) {
 				filenumber++;
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					end_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					end_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					end_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 					total_user_time = end_user_time - start_user_time;
 					total_cpu_time = end_cpu_time - start_cpu_time;
-					fprintf(stdout, "--rdwr User time: %.9g\tCPU time: %.9g\n",total_user_time, total_cpu_time);
+					fprintf(stdout, "User time: %f\tCPU time: %f\n",total_user_time, total_cpu_time);
 				}
 				break;
 			case 'i':
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					start_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					start_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					start_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					start_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 				}
 				if (verbose_flag){
 					fprintf(stdout,"--ignore %s\n",optarg);
@@ -552,18 +490,18 @@ int main(int argc, char* argv[]) {
 				signal(sig,SIG_IGN);
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					end_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					end_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					end_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 					total_user_time = end_user_time - start_user_time;
 					total_cpu_time = end_cpu_time - start_cpu_time;
-					fprintf(stdout, "--ignore User time: %.9g\tCPU time: %.9g\n",total_user_time, total_cpu_time);
+					fprintf(stdout, "User time: %f\tCPU time: %f\n",total_user_time, total_cpu_time);
 				}
 				break;
 			case 'q':
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					start_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					start_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					start_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					start_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 				}
 				if (verbose_flag){
 					fprintf(stdout,"--pause\n");
@@ -571,19 +509,18 @@ int main(int argc, char* argv[]) {
 				pause();
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					end_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					end_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					end_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 					total_user_time = end_user_time - start_user_time;
 					total_cpu_time = end_cpu_time - start_cpu_time;
-					fprintf(stdout, "--pause User time: %.9g\tCPU time: %.9g\n",total_user_time, total_cpu_time);
-				
+					fprintf(stdout, "User time: %f\tCPU time: %f\n",total_user_time, total_cpu_time);
 				}
 				break;
 			case 'u':
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					start_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					start_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					start_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					start_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 				}
 				if (verbose_flag){
 					fprintf(stdout,"--default %s\n",optarg);
@@ -592,33 +529,32 @@ int main(int argc, char* argv[]) {
 				signal(sig,SIG_DFL);
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					end_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					end_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					end_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 					total_user_time = end_user_time - start_user_time;
 					total_cpu_time = end_cpu_time - start_cpu_time;
-					fprintf(stdout, "--default User time: %.9g\tCPU time: %.9g\n",total_user_time, total_cpu_time);
+					fprintf(stdout, "User time: %f\tCPU time: %f\n",total_user_time, total_cpu_time);
 				}
 				break;
 			case 'z':
-				// if (profile_flag) {
-				// 	int u = getrusage(RUSAGE_SELF,&profileUsage);
-				// 	start_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-				// 	start_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
-				// }
+				if (profile_flag) {
+					int u = getrusage(RUSAGE_SELF,&profileUsage);
+					start_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					start_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
+				}
 				if (verbose_flag){
 					fprintf(stdout,"--wait\n");
 				}
-				int i;
-				for (i=0;i<filenumber;i++) {
-					close(files[i]);
-				}
+				// int j;
+				// for (j=0;j<filenumber;j++) {
+				// 	close(files[j]);
+				// }
 				finishedProcesses = 0;
 				while (finishedProcesses != runningProcesses) {
-					//fprintf(stdout, "finishedProcesses %d \t runningProcesses %d\n", finishedProcesses, runningProcesses);
+					
 					int s;
 					pid_t p = waitpid(-1,&s,0);		//all child processes
-					//fprintf(stdout, "Waiting for children. Still have %d processes\n", p);
-					//fprintf(stdout, "finishedProcesses %d \t runningProcesses %d at line 560\n", finishedProcesses, runningProcesses);
+
 					
 					if (WIFEXITED(s)) {
 						fprintf(stdout,"exit %d ",WEXITSTATUS(s));
@@ -651,24 +587,23 @@ int main(int argc, char* argv[]) {
 					//print arguments here
 					fprintf(stdout,"\n");
 					finishedProcesses++;
-					
 				}
 				runningProcesses = 0;
 				finishedProcesses = 0;
 				if (profile_flag) {
 					int u = getrusage(RUSAGE_SELF,&profileUsage);
-					end_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					end_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					end_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 					total_user_time = end_user_time - start_user_time;
 					total_cpu_time = end_cpu_time - start_cpu_time;
-					fprintf(stdout, "--wait User time: %.9g\t\tCPU time: %.9g\n",total_user_time, total_cpu_time);
+					fprintf(stdout, "User time: %f\tCPU time: %f\n",total_user_time, total_cpu_time);
 
 					u = getrusage(RUSAGE_CHILDREN,&profileUsage);
-					end_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-					end_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
+					end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+					end_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
 					total_user_time = end_user_time - start_user_time;
 					total_cpu_time = end_cpu_time - start_cpu_time;
-					fprintf(stdout, "Child User time: %.9g\tChild CPU time: %.9g\n",total_user_time, total_cpu_time);
+					fprintf(stdout, "Child User time: %f\tChild CPU time: %f\n",total_user_time, total_cpu_time);
 
 
 
@@ -696,32 +631,14 @@ int main(int argc, char* argv[]) {
 		max_exit_code = error_flag;
 	}
 
-	// Total running time output
-	// 	fails the sanity check but used for report
-	// int u = getrusage(RUSAGE_SELF,&profileUsage);
-	// fprintf(stderr, "%ld\n", profileUsage.ru_utime.tv_sec);
-	// fprintf(stderr, "%ld\n", profileUsage.ru_utime.tv_usec);
-	// fprintf(stderr, "%ld\n", profileUsage.ru_stime.tv_sec);
-	// fprintf(stderr, "%ld\n", profileUsage.ru_stime.tv_usec);
-	int u = getrusage(RUSAGE_SELF,&profileUsage);	
-	test_end_utime = (long) profileUsage.ru_utime.tv_sec * 1000000 + (long) profileUsage.ru_utime.tv_usec;
-	test_end_stime = (long) profileUsage.ru_stime.tv_sec * 1000000 + (long) profileUsage.ru_stime.tv_usec; 
-
-
-	//fprintf(stdout, "End User time: %lu\tEnd CPU time: %lu\n",test_end_utime , test_end_stime);
-	//fprintf(stdout,"u=%d\n",u);
-	if (profile_flag) {
-		int u = getrusage(RUSAGE_SELF,&profileUsage);
-
-		end_user_time = (float) profileUsage.ru_utime.tv_sec + (float)  profileUsage.ru_utime.tv_usec * 0.000001;
-		end_cpu_time = (float) profileUsage.ru_stime.tv_sec + (float)  profileUsage.ru_stime.tv_usec * 0.000001;
-		
-		total_user_time = end_user_time - overall_user_start_time;
-		total_cpu_time = end_cpu_time - overall_cpu_start_time;
-		fprintf(stdout, "Total User time: %.9g\tTotal CPU time: %.9g\n",total_user_time, total_cpu_time);
-		
-		//fprintf(stdout, "Total User time: %.9g\tTotal CPU time: %.9g\n",total_user_time, total_cpu_time);
-	}
+	//Total running time output
+		//fails the sanity check but used for report
+	// if (profile_flag) {
+	// 	int u = getrusage(RUSAGE_SELF,&profileUsage);
+	// 	end_user_time = (double) profileUsage.ru_utime.tv_sec + (double)  profileUsage.ru_utime.tv_usec * 0.000001;
+	// 	end_cpu_time = (double) profileUsage.ru_stime.tv_sec + (double)  profileUsage.ru_stime.tv_usec * 0.000001;
+	// 	fprintf(stdout, "Total User time: %f\nTotal CPU time: %f\n",end_user_time, end_cpu_time);
+	// }
 	if (exited_with_signal) {
 		//fprintf(stderr, "Max error signfal%d\n", max_exit_signal);
 		exit(max_exit_signal+128);
