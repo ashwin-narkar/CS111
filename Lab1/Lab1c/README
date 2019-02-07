@@ -2,15 +2,14 @@ Name: Ashwin
 ID: 204585474
 Email: ashwin.narkar@gmail.com
 
-This is part 1b of the lab.
+This is part 1c of the lab.
 
-For lab 1b, we continued implementing simpleton shell and we had to implement the remaining flags except for --profile.
+For lab 1c, we implemented the remaining flag, --profile.
 
-While there a lot more options to add this time, most of them were just added file options such as --append or --creat.
+This part of the lab was fairly easy to implement as it just involved adding a getrusage call to each option flag and each command. 
 
-We also had to implement signal handling using the signal library. The flags for this were --abort, --catch, --pause, --default, and --ignore.
---abort causes the program to segfault. --catch takes one number as an argument as the signal to catch. --pause waits for a signal to arrive. --default takes a number argument as the signal number to restore to its default behavior. --ignore takes a number argument as the signal number to ignore.
+I had trouble with the getrusage when actually performing benchmark tests however. The time values would not be consistent and would occasionally be 0 and sometimes negative. I went to OH for this issue and TAs were also not able to resolve it. To turn it on time and focus on the midterm, I used the times command to get values for the benchmark tests in bash, dash and simpsh.
 
-We also implemented --close, which takes one number argument as the file descriptor to close. We implemented --pipe which basically uses the pipe() system call to create two new file decriptors, one for the read end of a pipe and one for the write end of a pipe.
+I also had a small issue with the sanity check and benchmark tests. My code ran with the sanity check when I commented a for loop at line 548-551 in lab1c.c. However, I would have to uncomment this for loop to have my code be able to run the benchmark tests. This issue is also unresolved and I am not quite sure why it behaves this way.
 
-The hardest option for me to implement was the --wait. This command closes the write ends of pipes and waits for all subprocesses called before it to finish using the waitpid system. It also outputs the exit statuses of these commands followed by a list of the command that was run.
+I have turned in the version of code that passes all the sanity check cases provided by the TA. 
