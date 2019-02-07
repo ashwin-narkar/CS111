@@ -15,9 +15,9 @@ int main(int argc, char* argv[]) {
 	assert(rc == 0);
 	rc = pthread_create(&p2,NULL,mythread,"B");
 	assert(rc == 0);
-	rc = pthread_join(p1,NULL);
+	//rc = pthread_join(p1,NULL);
 	assert(rc == 0);
-	rc = pthread_join(p2,NULL);
+	//rc = pthread_join(p2,NULL);
 	assert(rc == 0);
 	printf("main: end\n");
 	return 0;
