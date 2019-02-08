@@ -36,6 +36,14 @@ int main(int argc, char* argv[]) {
 	counter = 0;
 	int numThreads;
 	int numIterations;
+	struct timespec times;
+	double starttime;
+	double endtime;
+	clock_gettime(CLOCK_MONOTONIC,&times);
+	starttime = (double) times.tv_sec + (double)  times.tv_nsec * 0.000000001;
+	//endtime = (double) times.tv_sec + (double)  times.tv_nsec * 0.000000001;
+	//fprintf(stdout, "%f\n", starttime);
+
 	struct option long_options[] = {
 		{"threads",required_argument,0,'t'},
 		{"iterations",required_argument,0,'i'},
@@ -49,11 +57,11 @@ int main(int argc, char* argv[]) {
 		switch (c) {
 			case 't':
 				numThreads = atoi(optarg);
-				fprintf(stdout, "%d\n", numThreads);
+				fprintf(stdout, "%d Threads\n", numThreads);
 				break;
 			case 'i':
 				numIterations = atoi(optarg);
-				fprintf(stdout, "%d\n", numIterations);
+				fprintf(stdout, "%d Iterations\n", numIterations);
 				break;
 			case '?':
 				fprintf(stderr, "Invalid Option!\n" );
@@ -75,5 +83,8 @@ int main(int argc, char* argv[]) {
 		pthread_join(thread_array[i],NULL);
 	}
 	
-	printf("%lld\n", counter);
+	printf("Counter = %lld\n", counter);
+	clock_gettime(CLOCK_MONOTONIC,&times);
+	endtime = (double) times.tv_sec + (double)  times.tv_nsec * 0.000000001;
+	fprintf(stdout, "Total time: %f\n", endtime - starttime);
 }
