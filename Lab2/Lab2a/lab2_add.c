@@ -10,11 +10,14 @@
 #include <pthread.h>
 
 long long counter;
-
+int opt_yield;
 
 
 void add(long long *pointer, long long value) {
 	long long sum = *pointer + value;
+	if (opt_yield) {
+		sched_yield();
+	}
     *pointer = sum;
 }
 
@@ -30,21 +33,24 @@ void *thread_func(void* arg) {
 	for (i=0;i<iter;i++) {
 		add(&counter,(long long)-1);
 	}
+	return NULL;
 }
 
 int main(int argc, char* argv[]) {
 	counter = 0;
+	opt_yield = 0;
 	int numThreads;
 	int numIterations;
 	struct timespec times;
-	double starttime;
-	double endtime;
+	long long starttime;
+	long long endtime;
 	clock_gettime(CLOCK_MONOTONIC,&times);
-	starttime = (double) times.tv_sec + (double)  times.tv_nsec * 0.000000001;
+	starttime = (long long ) times.tv_sec * 1000000000 + (long long )  times.tv_nsec ;
 	//endtime = (double) times.tv_sec + (double)  times.tv_nsec * 0.000000001;
 	//fprintf(stdout, "%f\n", starttime);
 
 	struct option long_options[] = {
+		{"yield", no_argument,&opt_yield,1},
 		{"threads",required_argument,0,'t'},
 		{"iterations",required_argument,0,'i'},
 		{NULL,0,NULL,0}
@@ -57,11 +63,11 @@ int main(int argc, char* argv[]) {
 		switch (c) {
 			case 't':
 				numThreads = atoi(optarg);
-				fprintf(stdout, "%d Threads\n", numThreads);
+				//fprintf(stdout, "%d Threads\n", numThreads);
 				break;
 			case 'i':
 				numIterations = atoi(optarg);
-				fprintf(stdout, "%d Iterations\n", numIterations);
+				//fprintf(stdout, "%d Iterations\n", numIterations);
 				break;
 			case '?':
 				fprintf(stderr, "Invalid Option!\n" );
@@ -73,7 +79,7 @@ int main(int argc, char* argv[]) {
 	pthread_t* thread_array = malloc(numThreads*sizeof(pthread_t));
 
 	//counter =100;
-	long long x = 1;
+	//long long x = 1;
 	int i;
 	for (i = 0;i<numThreads;i++) {
 		
@@ -82,9 +88,21 @@ int main(int argc, char* argv[]) {
 	for (i=0;i<numThreads;i++) {
 		pthread_join(thread_array[i],NULL);
 	}
+	if (!opt_yield) {
+		printf("add-none,");
+	}
+	else
+	{
+		printf("add-yield,");
+	}
+
 	
-	printf("Counter = %lld\n", counter);
 	clock_gettime(CLOCK_MONOTONIC,&times);
-	endtime = (double) times.tv_sec + (double)  times.tv_nsec * 0.000000001;
-	fprintf(stdout, "Total time: %f\n", endtime - starttime);
+	endtime = (long long ) times.tv_sec * 1000000000 + (long long )  times.tv_nsec ;
+	printf("%d,",numThreads);
+	printf("%d,", numIterations);
+	printf("%d,", numThreads*numIterations*2);
+	printf("%lld,", endtime - starttime);
+	printf("%lld\n", counter);
+	//fprintf(stdout, "Total time: %lld\n", endtime - starttime);
 }
