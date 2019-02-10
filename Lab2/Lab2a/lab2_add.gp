@@ -75,7 +75,7 @@ set ylabel "Cost per operation (ns)"
 set logscale y 10
 set output 'lab2_add-3.png'
 plot "< grep 'add-none,1,' lab2_add.csv" using ($3):($6) \
-	title 'Threads=1, w/o yields' with points
+	title 'Threads=1, w/o yields' with points lc rgb 'red'
 
 
 set title "Add-4: Threads and Iterations that run without failure"
