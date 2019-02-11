@@ -9,6 +9,9 @@
 
 SortedList_t** list;
 SortedList_t* head;
+pthread_mutex_t l = PTHREAD_MUTEX_INITIALIZER;
+int spin_lock = 0;
+char syncOption;
 
 struct threadArgs {
 	int threadNum;
@@ -32,6 +35,9 @@ char* generateRandKey() {
 }
 
 void *thread_func(void* arg) {
+	
+	
+
 	struct threadArgs *t =  (struct threadArgs*) arg;
 	int i;
 	int iterations = t->iter;
@@ -39,7 +45,24 @@ void *thread_func(void* arg) {
 	//fprintf(stdout, "Inserting %d\n", threadID);
 	for (i = threadID*iterations; i < threadID*iterations + iterations;i++) {
 		//fprintf(stdout, "Inserting %d\n", i);
+		
+		if (syncOption == 'm') {
+			pthread_mutex_lock(&l);
+		}
+		if (syncOption == 's') {
+			while (__sync_lock_test_and_set(&spin_lock,1));
+		}
+
 		SortedList_insert(head,list[i]);
+
+
+		if (syncOption == 's') {
+			__sync_lock_release(&spin_lock);
+		}
+
+		if (syncOption == 'm') {
+			pthread_mutex_unlock(&l);
+		}
 	}
 	int length = SortedList_length(head);
 	if (length < 0) {
@@ -49,18 +72,54 @@ void *thread_func(void* arg) {
 	SortedList_t *foundElement;
 	for (i = threadID*iterations; i< threadID*iterations + iterations;i++) {
 		//fprintf(stdout, "Finding and deleting %d\n", i);
+
+		if (syncOption == 'm') {
+			pthread_mutex_lock(&l);
+		}
+		if (syncOption == 's') {
+			while (__sync_lock_test_and_set(&spin_lock,1));
+		}
 		foundElement = SortedList_lookup(head,list[i]->key); 
+
+		if (syncOption == 's') {
+			__sync_lock_release(&spin_lock);
+		}
+
+		if (syncOption == 'm') {
+			pthread_mutex_unlock(&l);
+		}
+
 		if (foundElement == NULL) {
 			fprintf(stderr, "Error in lookup\n");
 			exit(1);
 		}	
+
+
+		if (syncOption == 'm') {
+			pthread_mutex_lock(&l);
+		}
+		if (syncOption == 's') {
+			while (__sync_lock_test_and_set(&spin_lock,1));
+		}
+
+		
 		if (SortedList_delete(foundElement) != 0) {
 			fprintf(stderr, "Error in delete\n");
 			exit(1);
 		}
 
+		if (syncOption == 's') {
+			__sync_lock_release(&spin_lock);
+		}
 
+		if (syncOption == 'm') {
+			pthread_mutex_unlock(&l);
+		}
 	}
+
+
+
+
 	pthread_exit(NULL);
 }
 
@@ -70,7 +129,7 @@ int main(int argc, char* argv[]) {
 	opt_yield = 0;
 	int numThreads =1 ;
 	int numIterations =1;
-	char syncOption = 'n';
+	syncOption = 'n';
 	long long starttime;
 	long long endtime;
 	struct timespec times;
@@ -102,6 +161,10 @@ int main(int argc, char* argv[]) {
 				break;
 			case 's':
 				syncOption = optarg[0];
+				if (syncOption != 's' && syncOption != 'm') {
+					fprintf(stderr, "Invalid sync option\n");
+					exit(1);
+				}
 				break;
 			case 'y':
 				//parse optarg to find i,d,l
@@ -196,7 +259,14 @@ int main(int argc, char* argv[]) {
 		printf("none");
 	}
 	printf("-");
-	printf(",");
+	if (syncOption == 'm' || syncOption == 's') {
+		printf("%c,", syncOption);
+	}
+	else
+	{
+		printf("none,");
+	}
+	
 	printf("%d,",numThreads);
 	printf("%d,",numIterations);
 	printf("1,");

@@ -39,13 +39,7 @@ void add_with_mutex(long long *pointer, long long value) {
 
 int spin_lock = 0;
 
-// void spinLock_lock(int *spin_lock) {
-// 	while (__sync_lock_test_and_set(spin_lock,1));
-// }
 
-// void spinLock_unlock(int *spin_lock) {
-// 	__sync_lock_release(spin_lock);
-// }
 
 void spin_lock_add(long long *pointer, long long value) {
 	while (__sync_lock_test_and_set(&spin_lock,1));
