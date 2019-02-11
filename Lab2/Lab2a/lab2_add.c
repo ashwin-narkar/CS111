@@ -154,6 +154,7 @@ int main(int argc, char* argv[]) {
 				break;
 			case '?':
 				fprintf(stderr, "Invalid Option!\n" );
+				exit(1);
 				break;
 			
 		}

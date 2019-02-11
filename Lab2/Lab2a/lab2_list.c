@@ -186,7 +186,7 @@ int main(int argc, char* argv[]) {
 				}
 				break;
 			case '?':
-				fprintf(stdout, "Invalid Option!\n" );
+				fprintf(stderr, "Invalid Option!\n" );
 				exit(1);
 				break;
 			
