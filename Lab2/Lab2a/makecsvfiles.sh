@@ -1,5 +1,11 @@
 #/bin/bash
 
+: '
+NAME: Ashwin Narkar
+ID: 204585474
+EMAIL: ashwin.narkar@gmail.com
+'
+
 echo ""
 echo "Making csv file"
 if [ -e "lab2_add.csv" ]

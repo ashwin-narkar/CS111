@@ -1,3 +1,10 @@
+/*
+NAME: Ashwin Narkar
+ID: 204585474
+EMAIL: ashwin.narkar@gmail.com
+*/
+
+
 #include <stdio.h>
 #include <stdlib.h> 
 #include <getopt.h>
