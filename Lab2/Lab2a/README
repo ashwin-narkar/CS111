@@ -4,4 +4,87 @@ EMAIL: ashwin.narkar@gmail.com
 
 SLIPDAYS: 0
 
-This is part 2a of the lab.
+This is part 2a of the lab. We implement two source files primiarly to demonstrate multithreading in C. First we implement lab2_add which has multiple threads update a global counter variable by adding and subtracting 1 from it. The counter should equal 0 at the of the program but because of race conditions, with more threads, this counter is rarely 0 at the end.
+
+We then implement lab2_list which has multiple threads insert, lookup, and delete from a shared sorted doubly linked list. Again with multiple threads, we often run into race conditions that result in segmentation faults when running this program.
+
+For both the programes we ran, we offer the --yield option, which yields a thread before a critical section. There are also --sync options, which uses mutexs, spin-locks, or atomic operations to prevent race conditions. 
+
+Files Included in tarball:
+	lab2_add.c:			Source code for multithreaded add to global variable for part 1 of lab2a
+	lab2_list.c:		Source code for multithreaded insert/lookup/delete from shared linkedlist for part2 of lab2a
+	SortedList.h:		Header file for linkedlist implementation for part2 of lab2a
+	SortedList.c:		Implementation of sorted, doubly linked list from SortedList.h
+	Makefile:			Scripts to build the programs, create .csv files, graphs and tarball
+	makecsvfiles.sh:	Script to generate lab2_add.csv and lab2_list.csv from lab2_add.c and lab2_list.c
+	lab2_add.csv:		Part1 Multithreaded add test data
+	lab2_list.csv:		Part2 Multithreaded linkedlist test data
+	README:				Contains information about the project and answers questions
+	lab2_add-1.png:		Threads and Iterations that run without failure (w/ and w/o yield)
+	lab2_add-2.png: 	Yield costs for 2 and 8 threaded add
+	lab2_add-3.png: 	Operation cost vs. iterations
+	lab2_add-4.png:		Threads and iterations that run without failure for various synchronization
+	lab2_add-5.png: 	Operation cost vs. number of threads for various synchronization
+	lab2_list-1.png:	Operation cost per iteration (corrected for linkedlist length)
+	lab2_list-2.png:	Unprotected threads and iterations that ran without failure for various yield options
+	lab2_list-3.png:	Protected iterations that run without failure
+	lab2_list-4.png:	Length adjusted operation cost vs. Threads
+	lab2_add.gp:		Data reduction script for add to generate .png files from lab2_add.csv
+	lab2_list.gp:		Data reduction script for list to generate .png files from lab2_list.csv
+
+
+QUESTION 2.1.1 - causing conflicts:
+	Why does it take many iterations before errors are seen?
+	Why does a significantly smaller number of iterations so seldom fail?
+	
+		It takes many iterations before errors are seen because each iteration takes a very small amount of time. The CPU scheduler likely lets a thread run until it has been running for a long time. If there is a small amount of iterations, the thread actually finishes before this time out. Thus the thread can run to completion before another thread begins, so there are actually no race conditions. In a large number of iterations, the CPU might start a new thread in the middle of an operation which is why another thread might access the counter variable in the middle of an operation resutling in a error in the counter value.
+
+		Small numbers of iterations seldom fail becasue the threads run to completion before starting another thread. In our code, we run numIterations times to add to the counter and then numIterations times to subtract from the counter. If there are few iterations, each thread can actually do the add and subtract operations in one run without the CPU switching the thread in the middle of add and subtract operations.
+
+QUESTION 2.1.2 - cost of yielding:
+	Why are the --yield runs so much slower?
+	Where is the additional time going?
+	Is it possible to get valid per-operation timings if we are using the --yield option?
+	If so, explain how. If not, explain why not.
+
+		--yield runs are so much slower becasue we involve the system call sched_yield() to force the CPU to switch to another thread everytime we run our add function. This means that we are forced to switch our thread every time. This results in far more context switches than we used to have. Each context switch adds additional time.
+	
+		The additional time is going into these context switches mentioned above. Each context switch needs to do memory I/O to save the current threads state, its stack pointer, program counter, local variables, etc into memory. It then need to find a thread that is ready to run. It then does more memory I/O to fetch that thread's state and stack data into the current context. This overhead time is where the time is going.
+	
+		It is possible to get per-operation timings using the --yield option. If we think about operation times as the time it takes to complete the add and assign in total as we have implemented it, we would use the clock_gettime function to get start time and and end time. However, this method would actually include the time it took to context switch to a different thread, and wait for some thread to yield back to this thread, context switch to this thread, and then continue the operation. Thus, this would not exactly be the pure operation time, however, it could be considered the time per operation as we have implemented our function.
+
+QUESTION 2.1.3 - measurement errors:
+	Why does the average cost per operation drop with increasing iterations?
+	If the cost per iteration is a function of the number of iterations, how do we know how many iterations to run (or what the "correct" cost is)?
+
+		Average cost drops with increasing iterations because the majority of the time taken by the program is used to intialize threads. This involves allocating memory for a new stack, local variables, new stack pointer, program counter, etc. If we increase iterations per thread, the average cost per operation goes down because we are doing more work for the overhead we do in making a thread (even if it just 1 thread).
+	
+		We would know how many iterations to run by seeing how long it takes our program to run N iterations in total. Then, we see the average cost per operation for N iteraitons. We could then use these two results and optimize the average cost to total time to calculate the "correct" cost and how many iterations to run for optimal performance. As we can see from our graphs (lab2_add-3), the drop in average cost per operation falls exponentially as the iterations increase. This suggests that there is some asymptote where the average cost cannot fall under. The way our code is written, it should be linear in runtime, so we can use this to optimize.
+
+QUESTION 2.1.4 - costs of serialization:
+	Why do all of the options perform similarly for low numbers of threads?
+	Why do the three protected operations slow down as the number of threads rises?
+
+		For low numbers of threads, there is less chance for threads accessing the same data. In the case of synchronization, threads will be blocked if they try to access shared data. If there is fewer threads, there is less chance for blocking. If a thread is blocked, the program has to wait longer until it is not blocked so it will increase run time, but for less blocking, the options will all behave similarly.
+	
+		As the number of threads rises, there is a higher chance for blocking because there are more threads trying to access the one global variable. Because we put a lock in some way (mutex, spin-lock, atomic add), the program will wait for blocked threads to complete which means the runtime will have to slowdown to wait for these blocked threads. 
+
+QUESTION 2.2.1 - scalability of Mutex
+	Compare the variation in time per mutex-protected operation vs the number of threads in Part-1 (adds) and Part-2 (sorted lists).
+	Comment on the general shapes of the curves, and explain why they have this shape.
+	Comment on the relative rates of increase and differences in the shapes of the curves, and offer an explanation for these differences.
+
+		In Part-1, we notice that the mutex protected add increases linearly with the number of threads but levels out after more than 4 threads. In Part-2, we see that the mutex protected operation increases linearly with the number of threads even after 4 threads. 
+
+		The general shapes of the curves for the list mutex and spin lock are similar and linear. The shapes of the spin-lock add is also linear but the curves for mutex and compare and swap similar in that they level off after 4 threads. For the list elements, it makes sense that both the curves grow linearly because inserting into the list is a linear operation in O(n) time because it is a sorted list. Also in the case of mutex and spinlocks, the list can only accessed by one thread at a time, so the list operations are still performed in linear time.
+
+		For the add operations, the leveling off after 4 threads probably comes from the fact that we have a fixed number of iterations (1000) and after a certain number of threads, the context switches tend to interfere with the same frequency so the cost per operation stays relatively constant. The CAS curve in lab2_add-5 is lower than mutex for any number of threads suggesting the atomic add and assign functions are efficient. The spin-lock increases linearly because unlike the mutex and CAS, a spinlock will stay in an infinite loop until some other thread gives up the lock. Because of this, the time increases linearly with threads because more threads means more collisions and more waiting for each thread.
+
+	
+
+
+
+QUESTION 2.2.2 - scalability of spin locks
+	Compare the variation in time per protected operation vs the number of threads for list operations protected by Mutex vs Spin locks. Comment on the general shapes of the curves, and explain why they have this shape.
+	Comment on the relative rates of increase and differences in the shapes of the curves, and offer an explanation for these differences.
+		For the list operations, the general shapes of the mutex and spinlock curves are similarly linear. For small numbers of threads, the mutex operations take slightly longer but overaell the difference between the two tends to stay constant, showing that both curves grow at similar rates. After 8 or so threads, the spinlock cost per operation starts increasing its growth rate, to catch up to the mutex cost per operation at 24 threads. This probably comes from the fact that the spin lock "hangs" and just waits for some other thread to release the lock which means it wastes CPU time. Thus each operation that spinlocks have to wait for take longer with more threads. More threads means more collisions between threads so a lot of threads have to wait for the spinlock to get released. In the mutex case, the code will yield to a different thread if the lock is held by another thread, so it does not waste CPU time the same way as the spin lock. This is way the spinlock cost per op grows faster than the mutex.
