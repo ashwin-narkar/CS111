@@ -1,4 +1,4 @@
-#! /usr/bin/gnuplot
+#!/usr/bin/gnuplot
 #
 # purpose:
 #	 generate data reduction graphs for the multi-threaded list project
@@ -107,12 +107,11 @@ plot \
 # unset the kinky x axis
 unset xtics
 set xtics
-
 set title "List-4: Scalability of synchronization mechanisms"
 set xlabel "Threads"
 set logscale x 2
 unset xrange
-set xrange [0.75:]
+set xrange [0.75:30]
 set ylabel "Length-adjusted cost per operation(ns)"
 set logscale y
 set output 'lab2_list-4.png'
