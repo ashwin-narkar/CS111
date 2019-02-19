@@ -1,0 +1,15 @@
+gperftools	
+
+run your tests from the picture
+	--list=your-thread-function
+
+Top 10 lines are stats: Under "ROUTINE================"
+
+2nd part: it lists ur source code for your thread func
+	higher number on the left means a sort of bottleneck: how many samples the profiler uses
+
+
+COMPILE WITH -g	
+
+More threads, throughput decreases
+
