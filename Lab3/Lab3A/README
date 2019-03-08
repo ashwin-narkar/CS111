@@ -1,0 +1,16 @@
+NAME: Ashwin
+ID: 204585474
+EMAIL: ashwin.narkar@gmail.com
+
+SLIPDAYS: 0
+
+This is lab 3a.
+
+Included files:
+lab3a.c:	This is the source code for analyzing a file system image
+Makefile: 	Makefile to build the programs and tarball
+README:		README for the submission with information about the submission
+ext2_fs.h:	Header file for the EXT2 file format containing structs for certain file sections
+
+
+My submission runs with the sanity check as well as trivial.img.

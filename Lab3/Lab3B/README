@@ -1,0 +1,14 @@
+Name: Ashwin Narkar
+UID: 204585474
+Email: ashwin.narkar@gmail.com
+
+The submission tarball provided contains the following files
+
+lab3b.py:	Analyzes a given .csv file(supposedly generated from lab 3a) with a file summary and determines the file system's validity and correctness
+Makefile:	Creates an executable file called lab3b from the lab3b.py script by creating a link to it
+README:		Includes descriptions of included files
+
+Lab3b has us analyze a given file system to check if it has any problems which could lead to corrupted files. 
+We evaluate a given csv file which contains a summary of the file system contents. 
+It was quite difficult to determine the accuracy of our program. My script passes the sanity check.
+I used Python because it is simple to write. I used the csvreader library in Python to read the csv files.
