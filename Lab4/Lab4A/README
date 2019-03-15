@@ -1,0 +1,16 @@
+NAME: Ashwin Narkar
+EMAIL: ashwin.narkar@gmail.com
+ID: 204585474
+
+This is the submission tarball for Lab4A
+
+BeagleBone serial Number: BBGW16062889
+MAC Address: 2CF7F1065512
+
+my_beaglebone.jpg:	A selfie of me holding my beaglebone
+connected.png: 		Command session over USB SSH showing wifi configuration process
+copy.png:		Using WinSCP client to copy hello.c over USB SSH
+build_run.png:		Connected BeagleBone over WIFI SSH and compiled and ran hello.c
+git.png:		Installed git and did git clone of a local repository from my github
+Makefile:		Build the submission tarball
+README:			Description of the files
