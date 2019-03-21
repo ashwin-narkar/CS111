@@ -2,20 +2,14 @@
 
 using namespace std;
 
-typedef int (*intFunPointer)(int);
-
-
-int main() {
-
-
-	int newloc =file.tellg();
-	line = "";
-	while (!file.eof()) {
-		char c;
-		file >> c;
-		line = "" + c;
-
-	}
-	
-
+int main(void)
+{
+	int value;
+	value = 1;
+	cout << "Preincrement operator value " << ++value << endl;
+	cout << "Value = " << value << endl;
+	cout << "Post increment opreator value " << value++ << value++ << endl;
+	cout << "Value = " << value << endl;
+	cout << "Post increment opreator 2 value " << value++ << endl;
+	cout << "Value = " << value << endl;
 }

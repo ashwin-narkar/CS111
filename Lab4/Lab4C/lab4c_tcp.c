@@ -64,6 +64,8 @@ void printTemp() {
 		   		b += sprintf(writebuf,"%02d:%02d:%02d ",localTime->tm_hour,localTime->tm_min,localTime->tm_sec);
 		   		b += sprintf(writebuf+b, "%.1f\n",temp);
 		   		write(sfd,writebuf,b);
+		   		fprintf(logfile, "%02d:%02d:%02d ",localTime->tm_hour,localTime->tm_min,localTime->tm_sec);
+		   		fprintf(logfile, "%.1f\n",temp);
 		   	}
 	   	}
 	   	if (shutdownFlag) {
@@ -75,6 +77,8 @@ void printTemp() {
 		   		b += sprintf(writebuf,"%02d:%02d:%02d ",localTime->tm_hour,localTime->tm_min,localTime->tm_sec);
 				b += sprintf(writebuf+b,"SHUTDOWN\n");
 				write(sfd,writebuf,b);
+				fprintf(logfile, "%02d:%02d:%02d ",localTime->tm_hour,localTime->tm_min,localTime->tm_sec);
+		   		fprintf(logfile, "%.1f\n",temp);
 			}
 			
 			exit(0);	   		
@@ -145,7 +149,7 @@ void evaluateWord(char* buf) {
 }
 
 int main(int argc, char* argv[]) {
-	printf("MRAA version: %s\n", mraa_get_version());
+	//printf("MRAA version: %s\n", mraa_get_version());
 	
 	int idArg = 0;
 	int hostArg =0;
@@ -232,9 +236,7 @@ int main(int argc, char* argv[]) {
 	}
 	signal(SIGINT,sigint_handler);
 	
-	struct pollfd polling;
-	polling.fd = 0;
-	polling.events = 0|POLLIN;
+	
 	stopped=0;
 	
 	
@@ -268,10 +270,11 @@ int main(int argc, char* argv[]) {
 
 	//printf("CONNECTED!\n");
 	///printf("%s\n", id);
-	writebuf[1024];
+	
 	int b=0;
 	b += sprintf(writebuf,"ID=%s\n",id);
 	write(sfd,writebuf,b);
+	fprintf(logfile, "ID=%s\n", id);
 	//printf("Wrote to server!\n");
 	pthread_t tempReporting;
 
@@ -313,6 +316,8 @@ int main(int argc, char* argv[]) {
 			   		b += sprintf(writebuf,"%02d:%02d:%02d ",localTime->tm_hour,localTime->tm_min,localTime->tm_sec);
 			   		b += sprintf(writebuf+b, "%.1f\n",temp);
 			   		write(sfd,writebuf,b);
+			   		fprintf(logfile, "%02d:%02d:%02d ",localTime->tm_hour,localTime->tm_min,localTime->tm_sec);
+		   			fprintf(logfile, "%.1f\n",temp);
 			   	}
 		   		if (logging) {
 					bzero(writebuf,1024*sizeof(char));
@@ -320,6 +325,8 @@ int main(int argc, char* argv[]) {
 			   		b += sprintf(writebuf,"%02d:%02d:%02d ",localTime->tm_hour,localTime->tm_min,localTime->tm_sec);
 					b += sprintf(writebuf+b,"SHUTDOWN\n");
 					write(sfd,writebuf,b);
+					fprintf(logfile,"%02d:%02d:%02d ",localTime->tm_hour,localTime->tm_min,localTime->tm_sec);
+					fprintf(logfile,"SHUTDOWN\n");
 				}
 				exit(0);	  
 			} 		

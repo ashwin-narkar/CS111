@@ -1,0 +1,10 @@
+NAME: Ashwin Narkar
+ID: 204585474
+EMAIL: ashwin.narkar@gmail.com
+
+lab4c_tcp:	Embedded application that establishes a TCP connection with a server to log temperature readings
+lab4c_tls:	Embedded application that establishes a TLS connection with a server to log temperature readings
+Makefile:	Makefile to build up the applications and create the submission tarball
+README:		Contains information about the included files in the tarball and a short description of the project
+
+This is my submission for lab4c where we used basic networking system calls to establish connections to a server and log readings from a temperature sensor. We compiled code to generate embedded applications in C on a Beaglebone running the Debian distribution of Linux. We did one unsecured connection over TCP and then one secured connnection over TLS using the OpenSSL library.

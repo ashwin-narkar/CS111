@@ -98,8 +98,6 @@ def inode_statefill():
 	
 
 def inodeEval():
-
-
 	for i in inodes:
 		inode = int(i[1])-1
 		free = isFreeInode(inode)

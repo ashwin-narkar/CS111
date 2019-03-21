@@ -1,0 +1,29 @@
+Sample Final:
+
+1. 	C
+	
+	C, For random writes, RAID0 and RAID1 are better. They are faster bc you dont have to do the write for the parity bit after. This is correct answer.
+
+	D is wrong because you dont have to read another block. If parity big is in teh same block you dont have to. Blocks can be cached. Overwriting data with the same copy doesnt need to change things.
+
+	B, RAID4 has nothing to do with disk failures
+
+2. A
+	B, Traditionally in UNIX, passwords are not world-readable.
+	D, public keys have a lot of overhead so they are used first. Shared-secret cryptography is used after. Shared key is used a lot more often.
+	C, more points of failure
+	A, if prime numbers were rare, it would make RSA insecure. You would just test all of them
+	E, uid_t values are not integers. 
+
+3. D
+	A, Each call to 'open' returns the same file handle, not a distinct file handle.
+	B, within a kernel you know all the shared files
+	C, assumes smart client.
+	D, idempotency means doing the same thing twice results in the same result. Client can keep retrying and if data is lost in transmission, we wanna do the op again.
+	E, clients dont validate the cache before using it, so we have the correctness problems.
+
+4. 
+	E, use clean pages as victims, because writing them to disk will be better and they haven't been used if theyre not dirty, we can just assume a little bit. 
+	B, paravirtualization, we translate system calls to the host OS from the guest. The problem with the statement is that the hosting is not dependent on hardware. It depends on how efficiently the host can translate the guest's system calls. The hardware does not even play a role so its not the reason that either one can hose efficiently. Hardware isn't the constraining factor.
+	A, cache affinity is used on both single and multiqueue schedulers. We know what is likely to be cached
+
